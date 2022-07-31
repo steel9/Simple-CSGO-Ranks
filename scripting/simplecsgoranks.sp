@@ -86,7 +86,7 @@ public void setRank(int steamId, int rank, int client) //done
 	IntToString(rank,srank,sizeof(srank));
 	IntToString(steamId,ssteamId,sizeof(ssteamId));
 	new String:query[128];
-	Format(query, sizeof(query), "UPDATE steam SET rank = %s, age = '%s' WHERE steamId = %s LIMIT 1", srank, stime, ssteamId); //limited
+	Format(query, sizeof(query), "UPDATE steam SET `rank` = %s, age = '%s' WHERE steamId = %s LIMIT 1", srank, stime, ssteamId); //limited
 	if(printToServer == 1) PrintToServer("query: %s", query);	
 
 
@@ -114,7 +114,7 @@ public void purgeOldUsers()
 	
 	if( dbCleaning == 0 ) return;
 
-	if (!SQL_FastQuery(dbc, "DELETE FROM steam WHERE rank = 100"))
+	if (!SQL_FastQuery(dbc, "DELETE FROM steam WHERE `rank` = 100"))
 	{
 		new String:error5[255]
 		SQL_GetError(dbc, error5, sizeof(error5))
@@ -155,7 +155,7 @@ public void newUser(int steamId) //done
 	IntToString(startRank,srank,sizeof(srank));
 	IntToString(GetTime(),stime,sizeof(stime));
 	new String:query[128];
-	Format(query, sizeof(query), "INSERT INTO steam (steamId, rank, age) VALUES(%s,%s,%s) ON DUPLICATE KEY UPDATE steamId = steamId", ssteamId, srank, stime); //dont wanna see anymore errors
+	Format(query, sizeof(query), "INSERT INTO steam (steamId, `rank`, age) VALUES(%s,%s,%s) ON DUPLICATE KEY UPDATE steamId = steamId", ssteamId, srank, stime); //dont wanna see anymore errors
 
 	if(printToServer == 1) PrintToServer("query: %s", query);
 	
@@ -327,7 +327,7 @@ public Action:Timer_Cache(Handle:timer)
 	ReplaceString(steamId, sizeof(steamId), "]", "", false);
 
 	new String:query[128];
-	query = "SELECT rank FROM steam WHERE steamId = ";
+	query = "SELECT `rank` FROM steam WHERE steamId = ";
 	StrCat(steamId, sizeof(steamId), " LIMIT 1"); //limit optimisation
 	StrCat(query, sizeof(query), steamId); //done
 
@@ -393,7 +393,7 @@ public int getRank(int steamId, int client) //fallback method
 	new String:ssteamId[65];
 	IntToString(steamId,ssteamId,sizeof(ssteamId));
 	new String:query[128];
-	query = "SELECT rank FROM steam WHERE steamId = "
+	query = "SELECT `rank` FROM steam WHERE steamId = "
 	StrCat(ssteamId, sizeof(ssteamId), " LIMIT 1"); //limit optimisation
 	StrCat(query, sizeof(query), ssteamId); //done
 	if(printToServer == 1) PrintToServer("query: %s", query);
@@ -432,7 +432,7 @@ public getRank2(int steamId, int i)
 	new String:ssteamId[65];
 	IntToString(steamId,ssteamId,sizeof(ssteamId));
 	new String:query[400];
-	Format(query, sizeof(query), "(SELECT CONCAT((SELECT count(steamId)+1 from steam where cast(rank as signed) > cast((SELECT rank from steam WHERE steamId =  %s LIMIT 1) as signed)),'/', (SELECT count(steamId) from steam)))", ssteamId); //limited
+	Format(query, sizeof(query), "(SELECT CONCAT((SELECT count(steamId)+1 from steam where cast(`rank` as signed) > cast((SELECT `rank` from steam WHERE steamId =  %s LIMIT 1) as signed)),'/', (SELECT count(steamId) from steam)))", ssteamId); //limited
 	if(printToServer == 1) PrintToServer("query: %s", query);
 	
 	if (dbt == INVALID_HANDLE)
@@ -477,8 +477,8 @@ public void userShot(int steamId1, int steamId2, int client, int client2) //done
 	}
 
 
-	Format(query, sizeof(query), "UPDATE steam SET steam.rank = (SELECT * FROM (SELECT CASE WHEN (SELECT cast(rank as decimal)+%d FROM steam WHERE steamId = %s LIMIT 1) < (SELECT cast(rank as decimal) FROM steam WHERE steamId = %s LIMIT 1) THEN rank+%d+%d ELSE rank+%d END FROM steam WHERE steamId = %s LIMIT 1) as b), steam.age = %s  WHERE steamId = %s LIMIT 1", higherRankThreshold, ssteamId1, ssteamId2, killPoints, higherRankFactor, killPoints, ssteamId1, stime, ssteamId1);
-	Format(query2, sizeof(query2), "UPDATE steam SET steam.rank = (SELECT * FROM (SELECT CASE WHEN (SELECT cast(rank as decimal)+%d FROM steam WHERE steamId = %s LIMIT 1) < (SELECT cast(rank as decimal) FROM steam WHERE steamId = %s LIMIT 1) THEN rank-%d-%d ELSE rank-%d-1 END FROM steam WHERE steamId = %s LIMIT 1) as b), steam.age = %s  WHERE steamId = %s LIMIT 1", higherRankThreshold, ssteamId1, ssteamId2, killPoints, higherRankFactor, killPoints, ssteamId2, stime, ssteamId2);
+	Format(query, sizeof(query), "UPDATE steam SET steam.`rank` = (SELECT * FROM (SELECT CASE WHEN (SELECT cast(`rank` as decimal)+%d FROM steam WHERE steamId = %s LIMIT 1) < (SELECT cast(`rank` as decimal) FROM steam WHERE steamId = %s LIMIT 1) THEN `rank`+%d+%d ELSE `rank`+%d END FROM steam WHERE steamId = %s LIMIT 1) as b), steam.age = %s  WHERE steamId = %s LIMIT 1", higherRankThreshold, ssteamId1, ssteamId2, killPoints, higherRankFactor, killPoints, ssteamId1, stime, ssteamId1);
+	Format(query2, sizeof(query2), "UPDATE steam SET steam.`rank` = (SELECT * FROM (SELECT CASE WHEN (SELECT cast(`rank` as decimal)+%d FROM steam WHERE steamId = %s LIMIT 1) < (SELECT cast(`rank` as decimal) FROM steam WHERE steamId = %s LIMIT 1) THEN `rank`-%d-%d ELSE `rank`-%d-1 END FROM steam WHERE steamId = %s LIMIT 1) as b), steam.age = %s  WHERE steamId = %s LIMIT 1", higherRankThreshold, ssteamId1, ssteamId2, killPoints, higherRankFactor, killPoints, ssteamId2, stime, ssteamId2);
 
 	if(printToServer == 1) PrintToServer("query: %s", query);	
 	if( immediateMode == 0 )
@@ -958,7 +958,7 @@ public OnMapStart ()
 public void getTop()
 {
 	new String:query[256];
-	query = "select concat(\"{B}\", stn.name,\"{B} - {G}\",a.rank) from (select * from steam order by cast(rank as decimal) desc limit 25) a join steamname stn on stn.steamId = a.steamId limit 25";
+	query = "select concat(\"{B}\", stn.name,\"{B} - {G}\",a.`rank`) from (select * from steam order by cast(`rank` as decimal) desc limit 25) a join steamname stn on stn.steamId = a.steamId limit 25";
 
 	if(printToServer == 1) PrintToServer("query: %s", query);
 
