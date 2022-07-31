@@ -3,7 +3,7 @@
 #include <cstrike>
 #include <smlib>
 
-#define PLUGIN_VERSION "0.2.4b"
+#define PLUGIN_VERSION "0.2.5@steel9"
 
 //Global Variables, do NOT touch.
 int shotPlayers = -1;
