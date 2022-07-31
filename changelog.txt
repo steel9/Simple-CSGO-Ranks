@@ -1,3 +1,6 @@
+0.2.5@steel9:
+Added support for MySQL 8.
+
 0.2.3:
 All queries should now operate in threads apart from the fallback method and the DB cleaning. This means that the updates should be almost instant if there are no cache faults.
 Removed some branching code.
